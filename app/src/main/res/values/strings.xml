@@ -6,11 +6,13 @@
 
     <string name="action_transform">Transform</string>
     <string name="action_copy">Copy to Clipboard</string>
+    <string name="action_copy_plain">Copy plain (no marks)</string>
     <string name="action_clear">Clear</string>
     <string name="action_swap">Reuse output as input</string>
     <string name="action_swap_short">Reuse</string>
 
     <string name="copied_confirmation">Text copied to clipboard</string>
+    <string name="copied_plain_confirmation">Copied without direction marks</string>
 
     <string name="original_text_field_desc">Original text input, editable and multiline</string>
     <string name="transformed_text_field_desc">Transformed text output, read only and selectable</string>

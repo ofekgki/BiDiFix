@@ -74,6 +74,13 @@ object BidiCharacters {
 
     /** Readable name for a control, or the raw code point (e.g. `U+2066`) if unknown. */
     fun nameOf(c: Char): String = labels[c] ?: "U+%04X".format(c.code)
+
+    /**
+     * Returns [text] with every bidi control removed, leaving only the visible characters
+     * (in their original logical order). Useful for pasting into apps that apply their own
+     * bidi and would otherwise show the invisible controls as stray glyphs.
+     */
+    fun strip(text: String): String = text.filterNot { isBidiControl(it) }
 }
 
 /**

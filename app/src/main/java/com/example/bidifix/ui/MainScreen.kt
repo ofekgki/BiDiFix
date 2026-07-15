@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bidifix.R
+import com.example.bidifix.bidi.BidiCharacters
 import com.example.bidifix.ui.components.TextPanel
 import com.example.bidifix.util.ClipboardHelper
 import com.example.bidifix.viewmodel.MainViewModel
@@ -44,9 +45,16 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
     val context = LocalContext.current
     val copiedMessage = stringResource(R.string.copied_confirmation)
 
+    val copiedPlainMessage = stringResource(R.string.copied_plain_confirmation)
+
     val onCopy: () -> Unit = {
         if (ClipboardHelper.copy(context, state.transformedText)) {
             scope.launch { snackbarHostState.showSnackbar(copiedMessage) }
+        }
+    }
+    val onCopyPlain: () -> Unit = {
+        if (ClipboardHelper.copy(context, BidiCharacters.strip(state.transformedText))) {
+            scope.launch { snackbarHostState.showSnackbar(copiedPlainMessage) }
         }
     }
 
@@ -103,6 +111,8 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     buttonLabel = stringResource(R.string.action_copy),
                     buttonEnabled = state.isCopyEnabled,
                     onButtonClick = onCopy,
+                    secondaryButtonLabel = stringResource(R.string.action_copy_plain),
+                    onSecondaryButtonClick = onCopyPlain,
                     modifier = m,
                 )
             }

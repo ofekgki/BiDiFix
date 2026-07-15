@@ -11,6 +11,23 @@ correctly when pasted into other apps.
 
 ---
 
+## Example
+
+![BiDiFix transforming a mixed Hebrew/English sentence](docs/example-mapreduce.png)
+
+The input is a Hebrew sentence that embeds the English term `MapReduce` and a leading list
+number:
+
+- **Original Text** (top): shown in raw logical order, so you can see the problem — the
+  numbered prefix `1.` and the English `MapReduce` collide with the surrounding Hebrew.
+- **Transformed Text** (bottom): after pressing **Transform**, `MapReduce` is wrapped in an
+  LTR isolate and the Hebrew prefix `ש-` stays attached to it, so the whole line reads
+  correctly right-to-left: `1. הבעיה ש-MapReduce נועד לפתור`.
+
+No visible character was added, removed, or reordered — only invisible direction controls.
+
+---
+
 ## What is Bidi (bidirectional) text?
 
 Hebrew and Arabic are written right-to-left (RTL); English is written left-to-right (LTR).
@@ -107,6 +124,24 @@ Declared in [`AndroidManifest.xml`](app/src/main/AndroidManifest.xml) and handle
 Both **cold start** (`onCreate`) and **already-running** (`onNewIntent`, with
 `launchMode="singleTop"`) are handled. Received text is placed in the input field and
 **not** transformed automatically — the user presses **Transform**.
+
+---
+
+## Copying the result
+
+The output panel offers two copy actions:
+
+- **Copy to Clipboard** — copies the exact transformed string, *including* the invisible
+  bidi controls. Use this for "dumb" renderers that do not run a full bidi algorithm
+  (some code editors, chat inputs, PDF fields), where the marks are what fix the display.
+- **Copy plain (no marks)** — strips every bidi control and copies only the visible
+  characters, in their original logical order. Use this for apps that already do bidi well
+  (e.g. **Microsoft Word**, Google Docs): they render the logical text correctly on their
+  own, and stripping the controls avoids stray "?"/box glyphs from editors that display the
+  control characters instead of honouring them.
+
+The invisible controls *are* the correction, so the plain copy relies on the receiving app
+to apply its own bidi. Most modern word processors do; simpler text fields may not.
 
 ---
 

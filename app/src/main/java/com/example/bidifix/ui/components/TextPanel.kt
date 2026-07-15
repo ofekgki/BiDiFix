@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,6 +46,8 @@ fun TextPanel(
     modifier: Modifier = Modifier,
     textDirection: TextDirection = TextDirection.Content,
     onValueChange: (String) -> Unit = {},
+    secondaryButtonLabel: String? = null,
+    onSecondaryButtonClick: () -> Unit = {},
 ) {
     Card(
         modifier = modifier,
@@ -78,6 +81,18 @@ fun TextPanel(
                     .padding(top = 12.dp),
             ) {
                 Text(buttonLabel)
+            }
+            if (secondaryButtonLabel != null) {
+                OutlinedButton(
+                    onClick = onSecondaryButtonClick,
+                    enabled = buttonEnabled,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                        .padding(top = 8.dp),
+                ) {
+                    Text(secondaryButtonLabel)
+                }
             }
         }
     }

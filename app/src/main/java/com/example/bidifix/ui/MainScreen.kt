@@ -8,13 +8,16 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -29,6 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bidifix.R
 import com.example.bidifix.bidi.BidiCharacters
 import com.example.bidifix.ui.components.TextPanel
+import com.example.bidifix.ui.theme.BiDiTheme
 import com.example.bidifix.util.ClipboardHelper
 import com.example.bidifix.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
@@ -44,8 +48,17 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val copiedMessage = stringResource(R.string.copied_confirmation)
-
     val copiedPlainMessage = stringResource(R.string.copied_plain_confirmation)
+
+    // Transform = Primary, Copy = Secondary (per the palette's component usage).
+    val transformButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+    )
+    val copyButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.secondary,
+        contentColor = MaterialTheme.colorScheme.onSecondary,
+    )
 
     val onCopy: () -> Unit = {
         if (ClipboardHelper.copy(context, state.transformedText)) {
@@ -60,18 +73,36 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
+                title = {
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                ),
                 actions = {
                     TextButton(
                         onClick = viewModel::reuseTransformed,
                         enabled = state.isSwapEnabled,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        ),
                     ) {
                         Text(stringResource(R.string.action_swap_short))
                     }
-                    TextButton(onClick = viewModel::clearAll) {
+                    TextButton(
+                        onClick = viewModel::clearAll,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                    ) {
                         Text(stringResource(R.string.action_clear))
                     }
                 },
@@ -89,6 +120,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
             val inputPanel: @Composable (Modifier) -> Unit = { m ->
                 TextPanel(
                     title = stringResource(R.string.original_text_title),
+                    subtitle = stringResource(R.string.original_text_subtitle),
                     value = state.originalText,
                     readOnly = false,
                     onValueChange = viewModel::updateOriginalText,
@@ -96,6 +128,8 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     buttonLabel = stringResource(R.string.action_transform),
                     buttonEnabled = state.isTransformEnabled,
                     onButtonClick = viewModel::transformText,
+                    panelColor = BiDiTheme.colors.inputSurface,
+                    buttonColors = transformButtonColors,
                     // Show the input in raw logical order (exactly as pasted/typed),
                     // instead of letting bidi reorder it to "look" already fixed.
                     textDirection = TextDirection.Ltr,
@@ -105,12 +139,15 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
             val outputPanel: @Composable (Modifier) -> Unit = { m ->
                 TextPanel(
                     title = stringResource(R.string.transformed_text_title),
+                    subtitle = stringResource(R.string.transformed_text_subtitle),
                     value = state.transformedText,
                     readOnly = true,
                     fieldContentDescription = stringResource(R.string.transformed_text_field_desc),
                     buttonLabel = stringResource(R.string.action_copy),
                     buttonEnabled = state.isCopyEnabled,
                     onButtonClick = onCopy,
+                    panelColor = BiDiTheme.colors.transformedSurface,
+                    buttonColors = copyButtonColors,
                     secondaryButtonLabel = stringResource(R.string.action_copy_plain),
                     onSecondaryButtonClick = onCopyPlain,
                     modifier = m,

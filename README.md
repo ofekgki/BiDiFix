@@ -96,14 +96,18 @@ Implemented in [`BidiTransformer`](app/src/main/java/com/example/bidifix/bidi/Bi
    neutral (see [`BidiTextAnalyzer`](app/src/main/java/com/example/bidifix/bidi/BidiTextAnalyzer.kt)).
 5. **Fold numbers** that belong to a Latin token (URLs, versions, `MainActivity.kt`) into
    that token, keeping it atomic; standalone numbers stay weak.
-6. **Resolve neutrals** to the surrounding direction, or to the base direction when they
+6. **Pair matched brackets** (UBA rule N0): for every `()`, `[]`, `{}`, `<>` pair, both
+   brackets take the direction of their inner content, so a bracketed expression such as
+   `GNU (Gnu's Not Unix)` is wrapped as one unit instead of having its closing bracket
+   split off into the surrounding direction.
+7. **Resolve neutrals** to the surrounding direction, or to the base direction when they
    sit between opposite runs — this is what keeps commas, dots inside URLs, quotes and
    brackets in the right place.
-7. **Wrap** each maximal run whose direction is opposite to the base in a matching isolate.
-8. **Anchor terminal punctuation** with an `RLM`/`LRM` when a sentence ends with an
+8. **Wrap** each maximal run whose direction is opposite to the base in a matching isolate.
+9. **Anchor terminal punctuation** with an `RLM`/`LRM` when a sentence ends with an
    opposite-direction isolate followed by a period/comma, so the punctuation stays at the
    visual end.
-9. **Validate** that all controls are balanced.
+10. **Validate** that all controls are balanced.
 
 The output always preserves the original visible characters exactly; only invisible
 controls are added.
@@ -145,19 +149,47 @@ to apply its own bidi. Most modern word processors do; simpler text fields may n
 
 ---
 
+## Design & theming
+
+The app uses a single, centralized Material 3 theme with a fixed brand palette (dynamic
+color is disabled) and automatic light/dark switching via the system setting.
+
+- **All colors live in [`Color.kt`](app/src/main/java/com/example/bidifix/ui/theme/Color.kt)**
+  — screens and components never hard-code hex values; they read from
+  `MaterialTheme.colorScheme` or from `BiDiTheme.colors`.
+- Material's `ColorScheme` has no slot for the two distinct panel surfaces, so those (plus
+  success/warning/accent/border) are provided as **semantic colors** (`BidiSemanticColors`)
+  through a `CompositionLocal` in
+  [`Theme.kt`](app/src/main/java/com/example/bidifix/ui/theme/Theme.kt).
+- Component roles: app **background** for the screen, **surface** for the top app bar, the
+  **Input Text Surface** / **Transformed Text Surface** for the two panels, **Primary** for
+  the Transform button, **Secondary** for Copy, **Accent** for focus/highlights, **Success**
+  for the copy confirmation, and **Error** reserved for real errors.
+- The two panels are distinguished by more than color — each has its own title and subtitle
+  — so the UI does not rely on color alone.
+
+The adaptive launcher icon
+([`ic_launcher_foreground.xml`](app/src/main/res/drawable/ic_launcher_foreground.xml) +
+[`ic_launcher_background.xml`](app/src/main/res/drawable/ic_launcher_background.xml)) shows
+two opposing arrows — a left-to-right run and a right-to-left run — on the brand indigo,
+representing bidirectional text.
+
+---
+
 ## Architecture
 
 Single-activity Jetpack Compose app with `ViewModel` + `StateFlow`:
 
 ```
 bidi/      BidiCharacters, BidiTextAnalyzer, BidiTransformer, SampleInputs   (pure JVM, unit-tested)
-ui/        MainScreen, components/TextPanel, theme/, Previews
+ui/        MainScreen, components/TextPanel, theme/ (Color, Theme, Type), Previews
 viewmodel/ MainViewModel + MainUiState (immutable, StateFlow)
 util/      ClipboardHelper, ShareIntentParser
 ```
 
 The bidi logic has **no Android dependencies**, so it is unit-tested in isolation. The UI
-contains no transformation logic — it only observes state and calls the ViewModel.
+contains no transformation logic — it only observes state and calls the ViewModel, and all
+colors come from the centralized theme.
 
 ---
 
@@ -192,8 +224,9 @@ assert on **exact Unicode code points**, using the debug helpers in
 
 BiDiFix is a **heuristic** corrector, not a full UBA reimplementation:
 
-- It reasons about tokens and paragraph base direction; it does not implement every UBA
-  rule (e.g. matched-bracket pairing rules N0, or full recursive isolate resolution).
+- It reasons about tokens and paragraph base direction; it applies a pragmatic subset of
+  the UBA (base direction, neutral resolution, matched-bracket pairing/N0, isolate
+  wrapping) rather than the full recursive algorithm.
 - Arabic and other RTL scripts are treated as RTL, but the app is tuned for Hebrew/English.
 - Deeply nested mixed brackets/quotes may not always match a hand-tuned expectation.
 - It preserves legacy embeddings/overrides (`LRE`/`RLE`/`PDF`/`LRO`/`RLO`) in input but

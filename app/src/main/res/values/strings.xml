@@ -2,7 +2,9 @@
     <string name="app_name">BiDiFix</string>
 
     <string name="original_text_title">Original Text</string>
+    <string name="original_text_subtitle">Paste or type mixed Hebrew/English text</string>
     <string name="transformed_text_title">Transformed Text</string>
+    <string name="transformed_text_subtitle">Bidi-corrected — ready to copy</string>
 
     <string name="action_transform">Transform</string>
     <string name="action_copy">Copy to Clipboard</string>

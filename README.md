@@ -125,9 +125,17 @@ Declared in [`AndroidManifest.xml`](app/src/main/AndroidManifest.xml) and handle
 - **`ACTION_PROCESS_TEXT`** with `text/plain` — BiDiFix appears in the **text-selection
   toolbar**; text is read from `Intent.EXTRA_PROCESS_TEXT`.
 
+Both extras are read with `getCharSequenceExtra` (not `getStringExtra`), so **styled text —
+e.g. shared from Chrome — is not dropped**: a `Spanned` value would make `getStringExtra`
+return `null`. Parameterised MIME types such as `text/plain;charset=utf-8` are accepted too.
+
 Both **cold start** (`onCreate`) and **already-running** (`onNewIntent`, with
-`launchMode="singleTop"`) are handled. Received text is placed in the input field and
-**not** transformed automatically — the user presses **Transform**.
+`launchMode="singleTop"`) are handled; the launch intent is consumed only on a fresh start,
+so a rotation does not re-apply it and wipe the user's edits. Received text is placed in the
+input field and **not** transformed automatically — the user presses **Transform**.
+
+The selection logic lives in a pure, unit-tested `ShareIntentParser.resolve(...)` function
+so it can be verified without an Android `Intent`.
 
 ---
 
@@ -217,6 +225,8 @@ and [`BidiAnalyzerTest`](app/src/test/java/com/example/bidifix/bidi/BidiAnalyzer
 assert on **exact Unicode code points**, using the debug helpers in
 [`TestUnicodeHelpers`](app/src/test/java/com/example/bidifix/bidi/TestUnicodeHelpers.kt)
 (`codePointsDebug()`, `controlsDebug()`) so invisible characters are visible in failures.
+[`ShareIntentParserTest`](app/src/test/java/com/example/bidifix/util/ShareIntentParserTest.kt)
+covers the share/process-text selection logic (action routing, MIME handling, empty input).
 
 ---
 

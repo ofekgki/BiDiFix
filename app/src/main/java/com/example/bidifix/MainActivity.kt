@@ -23,7 +23,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        handleIntent(intent)
+        // Only consume the launch intent on a fresh start. On a recreation (e.g. rotation)
+        // the ViewModel already holds the text, so re-applying would wipe the user's edits.
+        if (savedInstanceState == null) {
+            handleIntent(intent)
+        }
         setContent {
             BiDiFixTheme {
                 MainScreen(viewModel)
